@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitCoach - Il Tuo Personal Trainer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- STEP 1: Benvenuto -->
+        <div id="step-welcome" class="step active">
+            <h1>💪 FitCoach</h1>
+            <p class="subtitle">Il tuo personal trainer sempre con te</p>
+            <div class="avatars-preview">
+                <img src="images/coach-female.jpg" alt="Coach Sara" class="avatar-thumb">
+                <img src="images/coach-male.jpg" alt="Coach Marco" class="avatar-thumb">
+            </div>
+            <button onclick="nextStep('step-profile')" class="btn-primary">Inizia Ora</button>
+        </div>
+
+        <!-- STEP 2: Profilo Personale -->
+        <div id="step-profile" class="step">
+            <h2>Creiamo la tua scheda</h2>
+            <form id="profile-form">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <input type="text" id="nome" required placeholder="Il tuo nome">
+                </div>
+                <div class="form-group">
+                    <label>Età</label>
+                    <input type="number" id="eta" required placeholder="Anni" min="10" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Peso attuale (kg)</label>
+                    <input type="number" id="peso" required placeholder="es. 70" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label>Altezza (cm)</label>
+                    <input type="number" id="altezza" required placeholder="es. 175">
+                </div>
+                <div class="form-group">
+                    <label>Obiettivo</label>
+                    <select id="obiettivo" required>
+                        <option value="">Scegli...</option>
+                        <option value="dimagrimento">Dimagrimento</option>
+                        <option value="massa">Aumento Massa</option>
+                        <option value="forza">Aumento Forza</option>
+                        <option value="mantenimento">Mantenimento</option>
+                        <option value="benessere">Benessere Generale</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Livello di esperienza</label>
+                    <select id="livello" required>
+                        <option value="">Scegli...</option>
+                        <option value="principiante">Principiante</option>
+                        <option value="intermedio">Intermedio</option>
+                        <option value="avanzato">Avanzato</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary">Continua</button>
+            </form>
+        </div>
+
+        <!-- STEP 3: Selezione Avatar -->
+        <div id="step-avatar" class="step">
+            <h2>Scegli il tuo coach</h2>
+            <p class="coach-intro">Chi ti accompagnerà nel tuo percorso?</p>
+            
+            <div class="avatar-selection">
+                <div class="avatar-card" onclick="selectAvatar('sara')">
+                    <img src="images/coach-female.jpg" alt="Coach Sara" class="avatar-img">
+                    <h3>Sara</h3>
+                    <p class="coach-style">Motivazionale & Tecnica</p>
+                    <p class="coach-desc">"Ce la puoi fare! Ti guido passo dopo passo con costanza e dedizione."</p>
+                </div>
+                
+                <div class="avatar-card" onclick="selectAvatar('marco')">
+                    <img src="images/coach-male.jpg" alt="Coach Marco" class="avatar-img">
+                    <h3>Marco</h3>
+                    <p class="coach-style">Diretto & Determinato</p>
+                    <p class="coach-desc">"Niente scuse! Ti spingo oltre i tuoi limiti per raggiungere risultati."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: Dashboard Iniziale -->
+        <div id="step-dashboard" class="step">
+            <div class="dashboard-header">
+                <div class="coach-banner" id="coach-banner">
+                    <img id="coach-avatar" src="" alt="Coach">
+                    <div class="coach-message" id="welcome-message"></div>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>Peso Attuale</h4>
+                    <p id="stat-peso" class="stat-value">- kg</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Allenamenti</h4>
+                    <p id="stat-workouts" class="stat-value">0</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Obiettivo</h4>
+                    <p id="stat-obiettivo" class="stat-value">-</p>
+                </div>
+            </div>
+
+            <nav class="main-nav">
+                <button onclick="showPage('workout')" class="nav-btn">
+                    <span class="icon">💪</span>
+                    <span>Nuovo Workout</span>
+                </button>
+                <button onclick="showPage('history')" class="nav-btn">
+                    <span class="icon">📊</span>
+                    <span>Storico</span>
+                </button>
+                <button onclick="showPage('progress')" class="nav-btn">
+                    <span class="icon">📈</span>
+                    <span>Progressi</span>
+                </button>
+                <button onclick="showPage('profile')" class="nav-btn">
+                    <span class="icon">⚙️</span>
+                    <span>Profilo</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <script src="js/avatars.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

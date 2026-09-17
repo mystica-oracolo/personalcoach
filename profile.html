@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilo - FitCoach</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button onclick="showPage('dashboard')" class="back-btn">← Indietro</button>
+            <h1>⚙️ Il Tuo Profilo</h1>
+        </header>
+
+        <form id="edit-profile-form" class="form-section">
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" id="edit-nome" required>
+            </div>
+            <div class="form-group">
+                <label>Età</label>
+                <input type="number" id="edit-eta" required>
+            </div>
+            <div class="form-group">
+                <label>Peso (kg)</label>
+                <input type="number" id="edit-peso" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label>Altezza (cm)</label>
+                <input type="number" id="edit-altezza" required>
+            </div>
+            <div class="form-group">
+                <label>Obiettivo</label>
+                <select id="edit-obiettivo" required>
+                    <option value="dimagrimento">Dimagrimento</option>
+                    <option value="massa">Aumento Massa</option>
+                    <option value="forza">Aumento Forza</option>
+                    <option value="mantenimento">Mantenimento</option>
+                    <option value="benessere">Benessere Generale</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Livello</label>
+                <select id="edit-livello" required>
+                    <option value="principiante">Principiante</option>
+                    <option value="intermedio">Intermedio</option>
+                    <option value="avanzato">Avanzato</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-primary">Salva Modifiche</button>
+        </form>
+
+        <div class="danger-zone">
+            <h3>Zona Pericolosa</h3>
+            <button onclick="resetData()" class="btn-danger">Cancella Tutti i Dati</button>
+        </div>
+
+        <div class="coach-info">
+            <h3>Il Tuo Coach</h3>
+            <div id="current-coach" class="coach-card"></div>
+        </div>
+    </div>
+
+    <script src="js/avatars.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // Carica dati profilo
+        document.addEventListener('DOMContentLoaded', () => {
+            if (currentUser) {
+                document.getElementById('edit-nome').value = currentUser.nome;
+                document.getElementById('edit-eta').value = currentUser.eta;
+                document.getElementById('edit-peso').value = currentUser.peso;
+                document.getElementById('edit-altezza').value = currentUser.altezza;
+                document.getElementById('edit-obiettivo').value = currentUser.obiettivo;
+                document.getElementById('edit-livello').value = currentUser.livello;
+                
+                // Mostra coach attuale
+                const coach = avatars[currentUser.avatar];
+                document.getElementById('current-coach').innerHTML = `
+                    <img src="${coach.image}" alt="${coach.name}">
+                    <h4>${coach.name}</h4>
+                    <p>Stile: ${coach.style}</p>
+                `;
+            }
+        });
+        
+        // Salva modifiche
+        document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            currentUser.nome = document.getElementById('edit-nome').value;
+            currentUser.eta = parseInt(document.getElementById('edit-eta').value);
+            currentUser.peso = parseFloat(document.getElementById('edit-peso').value);
+            currentUser.altezza = parseInt(document.getElementById('edit-altezza').value);
+            currentUser.obiettivo = document.getElementById('edit-obiettivo').value;
+            currentUser.livello = document.getElementById('edit-livello').value;
+            
+            Storage.save('fitcoach_user', currentUser);
+            alert('Profilo aggiornato!');
+            loadDashboard();
+        });
+        
+        // Reset dati
+        function resetData() {
+            if (confirm('Sei sicuro? Tutti i dati verranno cancellati permanentemente!')) {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

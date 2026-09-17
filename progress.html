@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progressi - FitCoach</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button onclick="showPage('dashboard')" class="back-btn">← Indietro</button>
+            <h1>📈 I Tuoi Progressi</h1>
+        </header>
+
+        <div class="progress-section">
+            <h3>Evoluzione Peso</h3>
+            <div class="chart-container">
+                <canvas id="weight-chart"></canvas>
+            </div>
+            <div id="weight-stats" class="stats-summary"></div>
+        </div>
+
+        <div class="progress-section">
+            <h3>Aggiungi Peso</h3>
+            <form id="weight-form" class="quick-form">
+                <input type="number" id="new-weight" step="0.1" placeholder="Peso attuale (kg)" required>
+                <button type="submit" class="btn-primary">Salva</button>
+            </form>
+        </div>
+
+        <div class="progress-section">
+            <h3>Statistiche Generali</h3>
+            <div id="general-stats" class="stats-grid"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/avatars.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout - FitCoach</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="workout-header">
+            <button onclick="showPage('dashboard')" class="back-btn">← Indietro</button>
+            <button id="btn-audio-toggle" class="back-btn" onclick="toggleVoice()" title="Attiva/disattiva voce coach">🔊</button>
+            <div class="coach-mini" id="workout-coach">
+                <img id="mini-coach-avatar" src="" alt="Coach">
+            </div>
+        </header>
+
+        <div id="coach-talk" class="coach-talk">
+            <p id="coach-text"></p>
+        </div>
+
+        <div id="focus-selector" class="workout-section">
+            <h2>🎯 Cosa alleniamo oggi?</h2>
+            <div class="focus-grid">
+                <button type="button" class="focus-btn" onclick="chooseFocus('gambe')">🦵 Gambe</button>
+                <button type="button" class="focus-btn" onclick="chooseFocus('upper')">💪 Upper Body</button>
+                <button type="button" class="focus-btn" onclick="chooseFocus('cardio')">🏃 Cardio</button>
+                <button type="button" class="focus-btn" onclick="chooseFocus('full')">🔥 Full Body</button>
+            </div>
+        </div>
+
+        <div id="workout-section" class="workout-section" style="display:none;">
+            <div class="workout-section-header">
+                <h2>📋 Scheda del Giorno <span id="focus-label"></span></h2>
+                <button type="button" id="btn-change-focus" class="change-focus-btn" onclick="changeFocus()">↺ Cambia focus</button>
+            </div>
+            <div id="workout-plan" class="workout-plan">
+                <!-- Generato dinamicamente in base al focus scelto -->
+            </div>
+            <div class="add-exercise-row">
+                <input type="text" id="extra-exercise-input" placeholder="Hai fatto un altro esercizio? Scrivilo qui...">
+                <button type="button" onclick="handleAddUnplanned()" class="btn-secondary">+ Aggiungi</button>
+            </div>
+        </div>
+
+        <div class="workout-actions" id="workout-actions" style="display:none;">
+            <button onclick="startWorkout()" id="btn-start" class="btn-primary">Inizia Workout</button>
+            <button onclick="endWorkout()" id="btn-end" class="btn-secondary" style="display:none;">Termina</button>
+        </div>
+
+        <div id="active-workout" class="active-workout" style="display:none;">
+            <div class="timer" id="timer">00:00</div>
+            <div id="current-exercise" class="current-exercise"></div>
+        </div>
+    </div>
+
+    <script src="js/avatars.js"></script>
+    <script src="js/workout-engine.js"></script>
+    <script src="js/coach-voice.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
