@@ -11,6 +11,7 @@
         <header class="workout-header">
             <button onclick="showPage('dashboard')" class="back-btn">← Indietro</button>
             <button id="btn-audio-toggle" class="back-btn" onclick="toggleVoice()" title="Attiva/disattiva voce coach">🔊</button>
+            <button id="btn-handsfree-toggle" class="back-btn" onclick="toggleHandsFree()" title="Modalità mani libere (il coach chiede a voce, tu rispondi a voce)">🎙️</button>
             <div class="coach-mini" id="workout-coach">
                 <img id="mini-coach-avatar" src="" alt="Coach">
             </div>
@@ -18,6 +19,14 @@
 
         <div id="coach-talk" class="coach-talk">
             <p id="coach-text"></p>
+        </div>
+
+        <!-- In cima, così durante l'allenamento timer e contatore ripetizioni
+             restano sempre visibili senza dover scorrere la scheda -->
+        <div id="active-workout" class="active-workout" style="display:none;">
+            <div class="timer" id="timer">00:00</div>
+            <div id="current-exercise" class="current-exercise"></div>
+            <button type="button" id="btn-stop-assist" class="btn-secondary" style="display:none;" onclick="stopExerciseAssist()">⏹ Ferma assistenza</button>
         </div>
 
         <div id="focus-selector" class="workout-section">
@@ -48,16 +57,13 @@
             <button onclick="startWorkout()" id="btn-start" class="btn-primary">Inizia Workout</button>
             <button onclick="endWorkout()" id="btn-end" class="btn-secondary" style="display:none;">Termina</button>
         </div>
-
-        <div id="active-workout" class="active-workout" style="display:none;">
-            <div class="timer" id="timer">00:00</div>
-            <div id="current-exercise" class="current-exercise"></div>
-        </div>
     </div>
 
     <script src="js/avatars.js"></script>
     <script src="js/workout-engine.js"></script>
     <script src="js/coach-voice.js"></script>
+    <script src="js/exercise-assist.js"></script>
+    <script src="js/voice-input.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

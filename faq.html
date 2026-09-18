@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chiedi al Coach - FitCoach</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <button onclick="showPage('dashboard')" class="back-btn">← Indietro</button>
+            <h1>❓ Chiedi al Coach</h1>
+            <button id="btn-faq-voice" class="back-btn" onclick="askFaqByVoice()" title="Fai la domanda a voce">🎙️</button>
+        </header>
+
+        <div class="add-exercise-row">
+            <input type="text" id="faq-input" placeholder="Scrivi una domanda sul fitness..." autocomplete="off">
+            <button type="button" onclick="handleFaqSearch()" class="btn-secondary">Cerca</button>
+        </div>
+
+        <div id="faq-results" class="faq-results"></div>
+
+        <div id="faq-empty" class="empty-state">
+            <p>Fammi una domanda su allenamento, alimentazione, integratori, recupero o motivazione — provo a risponderti dalle 100 domande più comuni che mi vengono fatte.</p>
+        </div>
+
+        <div class="faq-categories" id="faq-categories">
+            <!-- Generato dinamicamente: elenco categorie per sfogliare senza cercare -->
+        </div>
+
+        <p class="faq-disclaimer">⚠️ Risposte generali, non sostituiscono il parere di un medico, un nutrizionista o un fisioterapista — soprattutto in caso di dolore, infortunio o condizioni di salute particolari.</p>
+    </div>
+
+    <script src="js/avatars.js"></script>
+    <script src="js/workout-engine.js"></script>
+    <script src="js/coach-voice.js"></script>
+    <script src="js/voice-input.js"></script>
+    <script src="js/faq-data.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/faq-page.js"></script>
+</body>
+</html>
