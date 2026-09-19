@@ -136,10 +136,10 @@ const VoiceInput = (function () {
 // --- Interpretazione delle risposte parlate ---
 
 const FOCUS_SYNONYMS = {
-    gambe: ['gambe', 'gamba', 'cosce', 'glutei'],
-    upper: ['upper', 'braccia', 'petto', 'busto', 'spalle', 'schiena', 'dorso'],
+    gambe: ['gambe', 'gamba', 'cosce', 'glutei', 'sotto', 'inferiore', 'parte bassa', 'parte inferiore', 'lower', 'gambe e glutei'],
+    upper: ['upper', 'braccia', 'petto', 'busto', 'spalle', 'schiena', 'dorso', 'sopra', 'superiore', 'parte alta', 'parte superiore'],
     cardio: ['cardio', 'corsa', 'aerobica'],
-    full: ['full', 'tutto il corpo', 'total body', 'corpo intero']
+    full: ['full', 'tutto il corpo', 'total body', 'corpo intero', 'mix completo', 'sessione completa', 'allenamento completo']
 };
 
 function matchFocus(transcript) {

@@ -23,10 +23,8 @@ let workoutSeconds = 0;
 let motivationTimer = null;
 let activeAssistExerciseId = null; // id dell'esercizio con assistenza vocale attiva ora
 let commandsHintGiven = false; // spiega i comandi vocali una sola volta a workout
-let handsFreeSilenceStreak = 0; // conta i tentativi consecutivi senza risposta captata
-const HANDSFREE_MAX_RETRIES = 3; // dopo N silenzi/errori di fila, si disattiva da sola invece di continuare all'infinito
+const HANDSFREE_MAX_RETRIES = 3; // dopo N silenzi/errori di fila, si rinuncia invece di continuare all'infinito
 const HANDSFREE_RETRY_DELAY_MS = 1500; // pausa minima prima di ridomandare, per non martellare la voce a raffica
-const HANDSFREE_KEY = 'fitcoach_handsfree_enabled';
 
 // Inizializzazione
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,9 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (audioBtn && typeof CoachVoice !== 'undefined') {
         audioBtn.textContent = CoachVoice.isEnabled() ? '🔊' : '🔇';
     }
-    const handsFreeBtn = document.getElementById('btn-handsfree-toggle');
-    if (handsFreeBtn) {
-        handsFreeBtn.classList.toggle('active', handsFreeEnabled());
+    // Voce attiva di default: appena si arriva sul workout senza un focus già
+    // scelto, il coach saluta da solo e chiede a voce cosa allenare oggi
+    // (vedi FOCUS_GREETINGS più sotto) — non serve più toccare nulla prima.
+    // askFocusByVoice() stessa verifica se c'è già un focus attivo o se la
+    // voce non è disponibile, quindi qui basta chiamarla quando ha senso.
+    if (document.getElementById('focus-selector')) {
+        askFocusByVoice();
     }
 });
 
@@ -87,11 +89,15 @@ function handleProfileSubmit(e) {
     
     currentUser = {
         nome: document.getElementById('nome').value,
+        sesso: document.getElementById('sesso').value,
         eta: parseInt(document.getElementById('eta').value),
         peso: parseFloat(document.getElementById('peso').value),
         altezza: parseInt(document.getElementById('altezza').value),
         obiettivo: document.getElementById('obiettivo').value,
         livello: document.getElementById('livello').value,
+        giorniSettimana: parseInt(document.getElementById('giorni').value),
+        doveAllena: document.getElementById('dove').value,
+        limitazioni: document.getElementById('limitazioni').value.trim(),
         createdAt: new Date().toISOString(),
         weightHistory: [
             { date: new Date().toISOString(), weight: parseFloat(document.getElementById('peso').value) }
@@ -209,6 +215,7 @@ function changeFocus() {
     document.getElementById('focus-selector').style.display = 'block';
     document.getElementById('workout-section').style.display = 'none';
     document.getElementById('workout-actions').style.display = 'none';
+    askFocusByVoice(); // il coach richiede subito a voce il nuovo focus, come al primo arrivo
 }
 
 // Riflette nel pulsante "Cambia focus" se è effettivamente utilizzabile
@@ -320,7 +327,7 @@ function startExerciseAssist(exerciseId) {
     if (typeof ExerciseAssist === 'undefined') return;
 
     activeAssistExerciseId = exerciseId;
-    const shouldAnnounceHint = handsFreeEnabled() && !commandsHintGiven;
+    const shouldAnnounceHint = voiceAssistAvailable() && !commandsHintGiven;
     if (shouldAnnounceHint) commandsHintGiven = true; // spiegato al massimo una volta a workout
     const stopBtn = document.getElementById('btn-stop-assist');
     if (stopBtn) stopBtn.style.display = 'inline-block';
@@ -328,7 +335,7 @@ function startExerciseAssist(exerciseId) {
 
     ExerciseAssist.start(ex, selectedAvatar, {
         onUpdate: (state) => renderAssistStatus(ex, state),
-        handsFree: handsFreeEnabled(),
+        handsFree: voiceAssistAvailable(),
         announceCommandsHint: shouldAnnounceHint,
         onComplete: () => {
             WorkoutSession.markDone(exerciseId);
@@ -337,7 +344,7 @@ function startExerciseAssist(exerciseId) {
             const curEx = document.getElementById('current-exercise');
             if (curEx) curEx.innerHTML = '';
             renderWorkoutPlan();
-            if (handsFreeEnabled()) {
+            if (voiceAssistAvailable()) {
                 askNextExerciseByVoice();
             } else if (typeof announceNextExercise === 'function') {
                 announceNextExercise(WorkoutSession.getNextSuggested(), selectedAvatar);
@@ -374,92 +381,77 @@ function renderAssistStatus(ex, state) {
 
 // --- Modalità mani libere (feedback 3): il coach chiede a voce quale
 // esercizio, e ascolta/interpreta la risposta parlata (js/voice-input.js).
-// Va attivata una volta a tocco (richiede il permesso del microfono); da lì
-// in poi il flusso scelta focus -> esercizi -> prossimo esercizio continua
-// a voce senza dover più toccare lo schermo.
-function handsFreeEnabled() {
-    return localStorage.getItem(HANDSFREE_KEY) === 'true';
+// RIDISEGNATO: prima serviva un pulsante 🎙️ separato da attivare a mano.
+// Ora la voce è attiva di default per tutta la sessione (unico interruttore
+// resta 🔊, quello che già c'era) e il coach saluta da solo appena si arriva
+// sulla pagina, senza bisogno di toccare nulla prima. "Non invadente" vuol
+// dire: un saluto, un ascolto, e se non risponde nessuno si ferma lì senza
+// insistere — i pulsanti a tocco restano comunque sempre visibili e utilizzabili.
+function voiceAssistAvailable() {
+    return typeof VoiceInput !== 'undefined' && VoiceInput.supported()
+        && typeof CoachVoice !== 'undefined' && CoachVoice.isEnabled();
 }
 
-// Disattiva la modalità mani libere da codice (non da tocco dell'utente):
-// usata quando il microfono non risponde più dopo alcuni tentativi, per non
-// restare bloccati in un ciclo di domande a vuoto. Avvisa una volta e basta.
-function disableHandsFree(spokenReason) {
-    localStorage.setItem(HANDSFREE_KEY, 'false');
-    const btn = document.getElementById('btn-handsfree-toggle');
-    if (btn) btn.classList.remove('active');
-    if (typeof VoiceInput !== 'undefined') VoiceInput.cancel();
-    handsFreeSilenceStreak = 0;
-    if (spokenReason && typeof CoachVoice !== 'undefined') {
-        const genderHint = selectedAvatar === 'marco' ? 'male' : 'female';
-        CoachVoice.speak(spokenReason, genderHint);
-    }
-}
-
-// Da chiamare quando il microfono non ha sentito nulla/ha dato errore: conta
-// i tentativi a vuoto, e se sono troppi disattiva la modalità mani libere
-// invece di continuare a riprovare all'infinito. Altrimenti aspetta un attimo
-// e ridomanda (mai subito, per non sembrare un disco rotto).
-function handleHandsFreeSilence(retryFn, message) {
-    handsFreeSilenceStreak++;
-    if (handsFreeSilenceStreak >= HANDSFREE_MAX_RETRIES) {
-        disableHandsFree(`${message} Passo alla modalità a tocco, puoi riattivare il microfono quando vuoi.`);
+// Da chiamare quando il microfono non ha sentito nulla/ha dato errore: dopo
+// un paio di tentativi rinuncia con un messaggio, invece di continuare a
+// ridomandare all'infinito (era il loop che si era rotto nella versione
+// precedente). Aspetta sempre un attimo prima di ridomandare, mai subito.
+function handleHandsFreeSilence(retryFn, message, streakRef) {
+    streakRef.count++;
+    const genderHint = selectedAvatar === 'marco' ? 'male' : 'female';
+    if (streakRef.count >= HANDSFREE_MAX_RETRIES) {
+        streakRef.count = 0;
+        CoachVoice.speak(`${message} Nessun problema, puoi toccare uno dei pulsanti quando vuoi.`, genderHint);
         return;
     }
-    const genderHint = selectedAvatar === 'marco' ? 'male' : 'female';
     CoachVoice.speak(message, genderHint, () => {
-        setTimeout(() => { if (handsFreeEnabled()) retryFn(); }, HANDSFREE_RETRY_DELAY_MS);
+        setTimeout(() => { if (voiceAssistAvailable()) retryFn(); }, HANDSFREE_RETRY_DELAY_MS);
     });
 }
 
-function toggleHandsFree() {
-    const enabling = !handsFreeEnabled();
-    if (enabling && (typeof VoiceInput === 'undefined' || !VoiceInput.supported())) {
-        alert('Il riconoscimento vocale non è supportato su questo browser/dispositivo. Puoi continuare a usare l\'app toccando lo schermo.');
-        return;
-    }
-    localStorage.setItem(HANDSFREE_KEY, enabling ? 'true' : 'false');
-    handsFreeSilenceStreak = 0;
-    const btn = document.getElementById('btn-handsfree-toggle');
-    if (btn) btn.classList.toggle('active', enabling);
-
-    if (!enabling) {
-        if (typeof VoiceInput !== 'undefined') VoiceInput.cancel();
-        return;
-    }
-    // Appena attivata: chiede subito a voce il passo attuale, se pertinente
-    if (!WorkoutSession.isActive()) {
-        askFocusByVoice();
-    } else if (activeWorkout && !activeAssistExerciseId) {
-        askNextExerciseByVoice();
-    }
-}
+// Le 10 varianti di saluto fornite per l'apertura sessione: una a caso ogni
+// volta, così il coach non sembra un disco rotto che dice sempre la stessa
+// identica frase ad ogni allenamento.
+const FOCUS_GREETINGS = [
+    'Ciao! Pronto per la sessione di oggi? Scegli il tuo focus: parte superiore, parte inferiore o un allenamento full body?',
+    'Buongiorno! È ora di muoversi. Cosa alleniamo oggi? Scegli tra upper body, lower body o total body.',
+    'Pronto a dare il massimo? Seleziona il circuito di oggi: preferisci sopra, sotto o tutto il corpo?',
+    'Bentornato! Iniziamo subito. Qual è l\'obiettivo del giorno? Parte alta, gambe e glutei, oppure un mix completo?',
+    'Buongiorno! Che si fa oggi? Parte superiore, parte inferiore o full body?',
+    'Carico per l\'allenamento? Dimmi su cosa vuoi concentrarti oggi: sopra, sotto o total body?',
+    'Ciao! Iniziamo? Seleziona il focus di oggi: parte superiore, inferiore o una sessione completa.',
+    'Buondì! Il tuo trainer virtuale è pronto. Quale zona del corpo facciamo bruciare oggi? Upper, lower o full body?',
+    'Ottimo giorno per allenarsi! Su cosa lavoriamo oggi? Parte superiore, inferiore o preferisci total body?',
+    'Buongiorno! Scaldiamo i muscoli: qual è il menù del giorno? Parte alta, parte bassa o corpo intero?'
+];
+let focusGreetingStreak = { count: 0 };
 
 function askFocusByVoice() {
-    if (!currentUser || WorkoutSession.isActive() || !handsFreeEnabled()) return;
+    if (!currentUser || WorkoutSession.isActive() || !voiceAssistAvailable()) return;
     const genderHint = selectedAvatar === 'marco' ? 'male' : 'female';
-    CoachVoice.speak('Cosa alleniamo oggi? Dì gambe, upper body, cardio o full body.', genderHint, () => {
+    const greeting = FOCUS_GREETINGS[Math.floor(Math.random() * FOCUS_GREETINGS.length)];
+    CoachVoice.speak(greeting, genderHint, () => {
         VoiceInput.listenOnce({
             onResult: (transcript) => {
-                handsFreeSilenceStreak = 0; // una risposta captata, anche se non capita: il microfono funziona
+                focusGreetingStreak.count = 0; // una risposta captata, anche se non capita: il microfono funziona
                 const focus = matchFocus(transcript);
                 if (focus) {
                     chooseFocus(focus);
                     CoachVoice.speak(`Perfetto, ${FOCUS_LABELS[focus] || ''}.`, genderHint);
                 } else {
-                    CoachVoice.speak('Non ho capito. Puoi ripetere, oppure toccare uno dei pulsanti.', genderHint, () => {
-                        if (handsFreeEnabled() && !WorkoutSession.isActive()) askFocusByVoice();
-                    });
+                    CoachVoice.speak('Non ho capito. Puoi ripetere, oppure toccare uno dei pulsanti.', genderHint);
                 }
             },
-            onError: () => handleHandsFreeSilence(askFocusByVoice, 'Non ho sentito bene il microfono.'),
-            onNoMatch: () => handleHandsFreeSilence(askFocusByVoice, 'Non ho sentito nulla.')
+            onError: () => handleHandsFreeSilence(askFocusByVoice, 'Non ho sentito bene il microfono.', focusGreetingStreak),
+            onNoMatch: () => handleHandsFreeSilence(askFocusByVoice, 'Non ho sentito nulla.', focusGreetingStreak)
         });
     });
 }
 
+let nextExerciseStreak = { count: 0 };
+
 function askNextExerciseByVoice() {
-    if (!activeWorkout || !handsFreeEnabled()) return;
+    if (!activeWorkout || !voiceAssistAvailable()) return;
     const genderHint = selectedAvatar === 'marco' ? 'male' : 'female';
     const next = WorkoutSession.getNextSuggested();
     const prompt = next
@@ -468,8 +460,8 @@ function askNextExerciseByVoice() {
     CoachVoice.speak(prompt, genderHint, () => {
         VoiceInput.listenOnce({
             onResult: (transcript) => {
-                if (!handsFreeEnabled()) return;
-                handsFreeSilenceStreak = 0; // una risposta captata, anche se non capita: il microfono funziona
+                if (!voiceAssistAvailable()) return;
+                nextExerciseStreak.count = 0; // una risposta captata, anche se non capita: il microfono funziona
                 if (next && isAffirmative(transcript)) {
                     startExerciseAssist(next.id);
                     return;
@@ -489,8 +481,8 @@ function askNextExerciseByVoice() {
                 renderWorkoutPlan();
                 CoachVoice.speak(`Segnato: ${transcript}.`, genderHint, () => askNextExerciseByVoice());
             },
-            onError: () => handleHandsFreeSilence(askNextExerciseByVoice, 'Non ho sentito bene il microfono.'),
-            onNoMatch: () => handleHandsFreeSilence(askNextExerciseByVoice, 'Non ho sentito nulla.')
+            onError: () => handleHandsFreeSilence(askNextExerciseByVoice, 'Non ho sentito bene il microfono.', nextExerciseStreak),
+            onNoMatch: () => handleHandsFreeSilence(askNextExerciseByVoice, 'Non ho sentito nulla.', nextExerciseStreak)
         });
     });
 }
@@ -507,7 +499,7 @@ function startWorkout() {
     
     workoutSeconds = 0;
     commandsHintGiven = false; // si rispiega una volta per il nuovo workout
-    handsFreeSilenceStreak = 0;
+    nextExerciseStreak.count = 0;
     document.getElementById('btn-start').style.display = 'none';
     document.getElementById('btn-end').style.display = 'block';
     document.getElementById('active-workout').style.display = 'block';
@@ -541,7 +533,7 @@ function startWorkout() {
     // il primo esercizio, senza bisogno di toccare nulla.
     if (typeof announcePlan === 'function') {
         announcePlan(currentPlan, selectedAvatar, () => {
-            if (handsFreeEnabled()) askNextExerciseByVoice();
+            if (voiceAssistAvailable()) askNextExerciseByVoice();
         });
     }
 }
