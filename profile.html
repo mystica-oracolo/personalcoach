@@ -19,6 +19,14 @@
                 <input type="text" id="edit-nome" required>
             </div>
             <div class="form-group">
+                <label>Sesso</label>
+                <select id="edit-sesso" required>
+                    <option value="uomo">Uomo</option>
+                    <option value="donna">Donna</option>
+                    <option value="altro">Preferisco non specificare</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label>Età</label>
                 <input type="number" id="edit-eta" required>
             </div>
@@ -48,6 +56,28 @@
                     <option value="avanzato">Avanzato</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label>Quanti giorni a settimana puoi allenarti?</label>
+                <select id="edit-giorni" required>
+                    <option value="2">2 giorni</option>
+                    <option value="3">3 giorni</option>
+                    <option value="4">4 giorni</option>
+                    <option value="5">5 giorni</option>
+                    <option value="6">6 giorni</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Dove ti alleni?</label>
+                <select id="edit-dove" required>
+                    <option value="palestra">Palestra</option>
+                    <option value="casa">Casa</option>
+                    <option value="entrambi">Entrambi</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Infortuni o limitazioni (opzionale)</label>
+                <input type="text" id="edit-limitazioni" placeholder="lascia vuoto se nessuna">
+            </div>
             <button type="submit" class="btn-primary">Salva Modifiche</button>
         </form>
 
@@ -74,6 +104,10 @@
                 document.getElementById('edit-altezza').value = currentUser.altezza;
                 document.getElementById('edit-obiettivo').value = currentUser.obiettivo;
                 document.getElementById('edit-livello').value = currentUser.livello;
+                document.getElementById('edit-sesso').value = currentUser.sesso || 'altro';
+                document.getElementById('edit-giorni').value = currentUser.giorniSettimana || 3;
+                document.getElementById('edit-dove').value = currentUser.doveAllena || 'palestra';
+                document.getElementById('edit-limitazioni').value = currentUser.limitazioni || '';
                 
                 // Mostra coach attuale
                 const coach = avatars[currentUser.avatar];
@@ -95,6 +129,10 @@
             currentUser.altezza = parseInt(document.getElementById('edit-altezza').value);
             currentUser.obiettivo = document.getElementById('edit-obiettivo').value;
             currentUser.livello = document.getElementById('edit-livello').value;
+            currentUser.sesso = document.getElementById('edit-sesso').value;
+            currentUser.giorniSettimana = parseInt(document.getElementById('edit-giorni').value);
+            currentUser.doveAllena = document.getElementById('edit-dove').value;
+            currentUser.limitazioni = document.getElementById('edit-limitazioni').value.trim();
             
             Storage.save('fitcoach_user', currentUser);
             alert('Profilo aggiornato!');

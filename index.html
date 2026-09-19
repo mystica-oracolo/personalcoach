@@ -29,6 +29,15 @@
                     <input type="text" id="nome" required placeholder="Il tuo nome">
                 </div>
                 <div class="form-group">
+                    <label>Sesso</label>
+                    <select id="sesso" required>
+                        <option value="">Scegli...</option>
+                        <option value="uomo">Uomo</option>
+                        <option value="donna">Donna</option>
+                        <option value="altro">Preferisco non specificare</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Età</label>
                     <input type="number" id="eta" required placeholder="Anni" min="10" max="100">
                 </div>
@@ -59,6 +68,30 @@
                         <option value="intermedio">Intermedio</option>
                         <option value="avanzato">Avanzato</option>
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>Quanti giorni a settimana puoi allenarti?</label>
+                    <select id="giorni" required>
+                        <option value="">Scegli...</option>
+                        <option value="2">2 giorni</option>
+                        <option value="3">3 giorni</option>
+                        <option value="4">4 giorni</option>
+                        <option value="5">5 giorni</option>
+                        <option value="6">6 giorni</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Dove ti alleni?</label>
+                    <select id="dove" required>
+                        <option value="">Scegli...</option>
+                        <option value="palestra">Palestra</option>
+                        <option value="casa">Casa</option>
+                        <option value="entrambi">Entrambi</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Infortuni o limitazioni da tenere presente? (opzionale)</label>
+                    <input type="text" id="limitazioni" placeholder="es. ginocchio destro, mal di schiena... lascia vuoto se nessuna">
                 </div>
                 <button type="submit" class="btn-primary">Continua</button>
             </form>
